@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Message — CONNECTO{% endblock %}
+{% block body %}
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px;background:var(--bg-primary)">
+  <div style="max-width:500px;width:100%">
+    <h2 style="font-size:22px;font-weight:700;margin-bottom:20px;text-align:center">📨 Shared Message</h2>
+    <div class="card" style="padding:20px">
+      {% if message %}
+      <div style="display:flex;gap:12px">
+        <img class="avatar avatar-md" src="{{ message.avatarUrl or '/static/icons/default-avatar.svg' }}" alt=""/>
+        <div>
+          <div style="font-weight:700;margin-bottom:4px">{{ message.displayName or 'User' }}</div>
+          <div style="color:var(--text-secondary);font-size:14px;line-height:1.6">{{ message.content }}</div>
+          {% if message.imageUrl %}<img src="{{ message.imageUrl }}" style="max-width:100%;border-radius:var(--radius-md);margin-top:8px"/>{% endif %}
+        </div>
+      </div>
+      {% else %}
+      <div style="text-align:center;color:var(--text-muted)">Message not found or has been deleted.</div>
+      {% endif %}
+    </div>
+    <div style="text-align:center;margin-top:20px">
+      <a href="/app" class="btn btn-primary">Open CONNECTO</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

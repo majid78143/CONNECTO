@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}{{ profile.displayName }} — CONNECTO{% endblock %}
+{% block body %}
+<div style="min-height:100vh;background:var(--bg-primary);padding:80px 20px 40px">
+  <div style="max-width:700px;margin:0 auto">
+    <a href="/app" class="btn btn-ghost btn-sm" style="margin-bottom:20px">← Back</a>
+
+    <!-- Profile Card -->
+    <div class="card" style="padding:0;overflow:hidden">
+      <!-- Banner -->
+      <div style="height:160px;background:linear-gradient(135deg,{{ profile.bannerColor or '#5865f2' }},{{ profile.bannerColor2 or '#9b59b6' }});position:relative">
+        {% if profile.animationHtml %}
+        <div style="position:absolute;inset:0;pointer-events:none">{{ profile.animationHtml | safe }}</div>
+        {% endif %}
+      </div>
+      <!-- Info row -->
+      <div style="padding:0 24px 24px;margin-top:-48px">
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px">
+          <div style="position:relative">
+            <img class="avatar" src="{{ profile.avatarUrl or '/static/icons/default-avatar.svg' }}" alt=""
+                 style="width:80px;height:80px;border:4px solid var(--bg-card);border-radius:50%"/>
+            <div class="status-dot {{ 'online' if profile.isOnline else 'offline' }}" style="width:18px;height:18px;bottom:4px;right:4px;border-width:3px"></div>
+          </div>
+          <div style="display:flex;gap:8px;margin-bottom:8px">
+            {% if is_own %}
+            <a href="/settings" class="btn btn-secondary btn-sm">✏️ Edit Profile</a>
+            {% else %}
+            <button class="btn btn-primary btn-sm" onclick="sendFriendReq('{{ profile.uid }}')">👋 Add Friend</button>
+            <button class="btn btn-ghost btn-sm" onclick="openDm('{{ profile.uid }}')">💬 Message</button>
+            <button class="btn btn-danger btn-sm" onclick="blockUser('{{ profile.uid }}')">🚫</button>
+            {% endif %}
+          </div>
+        </div>
+        <div style="margin-bottom:6px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <span style="font-size:22px;font-weight:800">{{ profile.displayName }}</span>
+          {% if profile.isPremium %}<span class="badge badge-gold" style="font-size:12px">💎 Premium</span>{% endif %}
+          {% if profile.isVerified %}<span style="font-size:18px" title="Verified">✅</span>{% endif %}
+          {% if profile.role == 'admin' %}<span class="badge badge-red" style="font-size:12px">👑 Admin</span>{% endif %}
+        </div>
+        {% if profile.username %}<div style="color:var(--text-muted);font-size:14px;margin-bottom:8px">@{{ profile.username }}</div>{% endif %}
+        {% if profile.customStatus %}<div style="color:var(--text-secondary);font-size:14px;margin-bottom:12px">💬 {{ profile.customStatus }}</div>{% endif %}
+        <div style="font-size:13px;color:var(--text-muted)">
+          Joined: {{ profile.joinedAt | default('Unknown') }}
+          {% if not profile.isOnline and profile.lastSeen %}· Last seen: <span id="last-seen-time">{{ profile.lastSeen }}</span>{% endif %}
+        </div>
+      </div>
+
+      <!-- Bio -->
+      {% if profile.bio %}
+      <div style="padding:0 24px 24px;border-top:1px solid var(--border);margin-top:8px;padding-top:20px">
+        <h3 style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:12px">About Me</h3>
+        {% if profile.isPremium %}
+        <div class="html-content" style="font-size:14px;line-height:1.6">{{ profile.bio | safe }}</div>
+        {% else %}
+        <div style="font-size:14px;line-height:1.6;color:var(--text-secondary)">{{ profile.bio }}</div>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      <!-- Badges -->
+      {% if profile.badges %}
+      <div style="padding:0 24px 24px;border-top:1px solid var(--border);padding-top:20px">
+        <h3 style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:12px">Badges</h3>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          {% for badge in profile.badges %}
+          <div class="badge" title="{{ badge.label }}">{{ badge.icon }} {{ badge.label }}</div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Mutual servers -->
+      {% if mutual_servers %}
+      <div style="padding:0 24px 24px;border-top:1px solid var(--border);padding-top:20px">
+        <h3 style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:12px">{{ mutual_servers|length }} Mutual Server{% if mutual_servers|length != 1 %}s{% endif %}</h3>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          {% for srv in mutual_servers %}
+          <a href="/app?server={{ srv.id }}" style="text-decoration:none">
+            <div style="display:flex;align-items:center;gap:6px;background:var(--bg-hover);border-radius:var(--radius-sm);padding:6px 10px;font-size:13px;color:var(--text-secondary)">
+              {% if srv.iconUrl %}<img src="{{ srv.iconUrl }}" style="width:20px;height:20px;border-radius:4px">{% endif %}
+              {{ srv.name }}
+            </div>
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+<script>
+function sendFriendReq(uid) {
+  fetch(`/u/${uid}/friend-request`, { method: 'POST' })
+    .then(r => r.json()).then(d => toast(d.message || d.error, d.success ? 'success' : 'error'));
+}
+function openDm(uid) { window.location.href = `/app?dm=${uid}`; }
+function blockUser(uid) {
+  confirm2('Block this user?', () => {
+    fetch(`/u/${uid}/block`, { method: 'POST' }).then(() => toast('User blocked', 'success'));
+  }, true);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+{% block title %}Settings — CONNECTO{% endblock %}
+{% block body %}
+<div style="min-height:100vh;background:var(--bg-primary);display:flex">
+  <!-- Sidebar -->
+  <div style="width:220px;background:var(--bg-secondary);border-right:1px solid var(--border);padding:16px 10px;flex-shrink:0">
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);padding:0 8px;margin-bottom:6px">Account</div>
+    {% for sid, icon, label in [('profile','👤','My Profile'),('account','🔐','Account'),('privacy','🛡️','Privacy'),('notifications','🔔','Notifications'),('appearance','🎨','Appearance'),('security','🔑','Security & Login')] %}
+    <button onclick="showSec('{{sid}}')" id="snav-{{sid}}" class="admin-nav-btn" style="display:flex;align-items:center;gap:10px;width:100%;padding:9px 12px;border-radius:var(--radius-sm);border:none;background:none;cursor:pointer;color:var(--text-secondary);font-size:14px;transition:all var(--transition);text-align:left;margin-bottom:2px">
+      {{icon}} {{label}}
+    </button>
+    {% endfor %}
+    <div style="height:1px;background:var(--border);margin:10px 8px"></div>
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);padding:0 8px;margin:10px 0 6px">Data</div>
+    <button onclick="exportGdpr()" class="admin-nav-btn" style="display:flex;align-items:center;gap:10px;width:100%;padding:9px 12px;border-radius:var(--radius-sm);border:none;background:none;cursor:pointer;color:var(--text-secondary);font-size:14px;text-align:left">📦 Export My Data</button>
+    <a href="/app" class="admin-nav-btn" style="display:flex;align-items:center;gap:10px;width:100%;padding:9px 12px;border-radius:var(--radius-sm);color:var(--text-secondary);font-size:14px;text-decoration:none;margin-top:4px">← Back to App</a>
+    <button onclick="logout()" style="display:flex;align-items:center;gap:10px;width:100%;padding:9px 12px;border-radius:var(--radius-sm);border:none;background:none;cursor:pointer;color:var(--accent-red);font-size:14px;text-align:left;margin-top:auto">🚪 Log Out</button>
+  </div>
+
+  <!-- Content -->
+  <div style="flex:1;overflow-y:auto;padding:32px 40px;max-width:700px">
+
+    <!-- Profile -->
+    <div id="sec-profile">
+      <h2 style="font-size:24px;font-weight:700;margin-bottom:24px">My Profile</h2>
+      <form onsubmit="return saveProfile(event)">
+        <div class="form-group">
+          <label class="form-label">Avatar</label>
+          <div style="display:flex;align-items:center;gap:16px">
+            <img id="avatar-preview" class="avatar" src="{{ current_user.avatarUrl or '/static/icons/default-avatar.svg' }}" style="width:72px;height:72px;border-radius:50%"/>
+            <div>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('avatar-file').click()">📷 Change Avatar</button>
+              <input type="file" id="avatar-file" accept="image/*" style="display:none" onchange="previewAvatar(event)"/>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Display Name</label>
+          <input class="input" id="s-name" value="{{ current_user.displayName or '' }}" maxlength="32"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Username</label>
+          <input class="input" id="s-username" value="{{ current_user.username or '' }}" maxlength="32" placeholder="unique_username"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Custom Status</label>
+          <input class="input" id="s-status" value="{{ current_user.customStatus or '' }}" maxlength="64" placeholder="Playing chess..."/>
+        </div>
+        <div class="form-group">
+          <label class="form-label" style="display:flex;justify-content:space-between">
+            <span>Bio</span>
+            {% if current_user.isPremium %}<span class="badge badge-gold">HTML supported 💎</span>{% else %}<span style="color:var(--text-muted);font-size:12px">Max 500 chars</span>{% endif %}
+          </label>
+          <textarea class="textarea" id="s-bio" rows="5" maxlength="{{ 5000 if current_user.isPremium else 500 }}" placeholder="Tell us about yourself...">{{ current_user.bio or '' }}</textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Banner Color</label>
+          <div style="display:flex;gap:10px;align-items:center">
+            <input type="color" id="s-banner" value="{{ current_user.bannerColor or '#5865f2' }}" style="width:48px;height:36px;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer"/>
+            <input type="color" id="s-banner2" value="{{ current_user.bannerColor2 or '#9b59b6' }}" style="width:48px;height:36px;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer"/>
+            <span style="font-size:13px;color:var(--text-muted)">Gradient start & end</span>
+          </div>
+        </div>
+        <button class="btn btn-primary" type="submit">Save Changes</button>
+      </form>
+    </div>
+
+    <!-- Account -->
+    <div id="sec-account" class="hidden">
+      <h2 style="font-size:24px;font-weight:700;margin-bottom:24px">Account</h2>
+      <div class="card" style="padding:20px;margin-bottom:16px">
+        <div style="font-size:13px;color:var(--text-muted);margin-bottom:4px">Email</div>
+        <div style="font-weight:600">{{ current_user.email or 'N/A' }}</div>
+      </div>
+      <div class="card" style="padding:20px;margin-bottom:24px">
+        <div style="font-size:13px;color:var(--text-muted);margin-bottom:4px">User ID</div>
+        <div style="font-family:var(--font-mono);font-size:13px;word-break:break-all">{{ current_user.uid }}</div>
+      </div>
+      <h3 style="font-size:16px;font-weight:700;margin-bottom:12px">Change Password</h3>
+      <div class="form-group"><input class="input" type="password" id="new-pwd" placeholder="New password (min 8 chars)"/></div>
+      <button class="btn btn-secondary btn-sm" onclick="changePassword()">Update Password</button>
+      <div style="margin-top:32px;padding-top:24px;border-top:1px solid var(--border)">
+        <h3 style="color:var(--accent-red);margin-bottom:8px">Danger Zone</h3>
+        <button class="btn btn-danger btn-sm" onclick="deleteAccount()">🗑️ Delete My Account</button>
+      </div>
+    </div>
+
+    <!-- Appearance -->
+    <div id="sec-appearance" class="hidden">
+      <h2 style="font-size:24px;font-weight:700;margin-bottom:24px">Appearance</h2>
+      <div class="form-group">
+        <label class="form-label">Theme</label>
+        <div style="display:flex;gap:12px">
+          <label class="card" style="padding:16px 24px;cursor:pointer;display:flex;align-items:center;gap:10px;flex:1"><input type="radio" name="theme" value="dark" {{ 'checked' if not current_user.settings or current_user.settings.theme=='dark' }}/> 🌑 Dark</label>
+          <label class="card" style="padding:16px 24px;cursor:pointer;display:flex;align-items:center;gap:10px;flex:1"><input type="radio" name="theme" value="light" {{ 'checked' if current_user.settings and current_user.settings.theme=='light' }}/> ☀️ Light</label>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="saveAppearance()">Save</button>
+    </div>
+
+    <!-- Notifications -->
+    <div id="sec-notifications" class="hidden">
+      <h2 style="font-size:24px;font-weight:700;margin-bottom:24px">Notifications</h2>
+      {% for key, label in [('mentions','Notify on @mentions'),('dms','Direct Message notifications'),('friendReqs','Friend request notifications'),('serverEvents','Server events (joins, kicks)'),('emailDigest','Weekly email digest')] %}
+      <div class="card" style="padding:16px 20px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between">
+        <span style="font-size:14px">{{label}}</span>
+        <label class="toggle"><input type="checkbox" id="notif-{{key}}" {{ 'checked' if not current_user.notifSettings or current_user.notifSettings.get(key, True) }}/><span class="toggle-slider"></span></label>
+      </div>
+      {% endfor %}
+      <button class="btn btn-primary btn-sm" style="margin-top:8px" onclick="saveNotifs()">Save</button>
+    </div>
+
+    <!-- Security -->
+    <div id="sec-security" class="hidden">
+      <h2 style="font-size:24px;font-weight:700;margin-bottom:24px">Security & Login</h2>
+      <div class="card" style="padding:20px;margin-bottom:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div><h3 style="font-size:15px;margin-bottom:4px">Two-Factor Authentication</h3><p style="font-size:13px;color:var(--text-muted)">Add an extra layer of security</p></div>
+          <button class="btn btn-primary btn-sm" onclick="setup2fa()">Enable 2FA</button>
+        </div>
+      </div>
+      <h3 style="font-size:16px;font-weight:700;margin-bottom:12px">Login History</h3>
+      <div id="login-history" class="card" style="padding:0;overflow:hidden">
+        <div style="padding:20px;text-align:center"><div class="spinner" style="margin:0 auto"></div></div>
+      </div>
+    </div>
+
+    <!-- Privacy -->
+    <div id="sec-privacy" class="hidden">
+      <h2 style="font-size:24px;font-weight:700;margin-bottom:24px">Privacy</h2>
+      {% for key, label in [('showOnlineStatus','Show my online status'),('allowFriendRequests','Allow friend requests from everyone'),('allowDMs','Allow DMs from non-friends'),('showMutualServers','Show mutual servers on my profile')] %}
+      <div class="card" style="padding:16px 20px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between">
+        <span style="font-size:14px">{{label}}</span>
+        <label class="toggle"><input type="checkbox" id="priv-{{key}}" checked/><span class="toggle-slider"></span></label>
+      </div>
+      {% endfor %}
+      <button class="btn btn-primary btn-sm" style="margin-top:8px" onclick="savePrivacy()">Save</button>
+    </div>
+  </div>
+</div>
+
+<style>
+.toggle { position:relative;display:inline-block;width:42px;height:22px }
+.toggle input { opacity:0;width:0;height:0 }
+.toggle-slider { position:absolute;cursor:pointer;inset:0;background:var(--bg-hover);border-radius:22px;transition:.3s }
+.toggle-slider:before { content:'';position:absolute;width:16px;height:16px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s }
+input:checked+.toggle-slider { background:var(--accent-blue) }
+input:checked+.toggle-slider:before { transform:translateX(20px) }
+</style>
+
+<script>
+function showSec(id) {
+  document.querySelectorAll('[id^="sec-"]').forEach(el=>el.classList.add('hidden'));
+  document.getElementById(`sec-${id}`)?.classList.remove('hidden');
+  document.querySelectorAll('.admin-nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(`snav-${id}`)?.classList.add('active');
+  if(id==='security') loadLoginHistory();
+}
+
+async function saveProfile(e) {
+  e.preventDefault();
+  const avatarFile = document.getElementById('avatar-file').files[0];
+  let avatarUrl = '';
+  if (avatarFile) {
+    try { const up = await uploadImage(avatarFile); avatarUrl = up.url; } catch(e) {}
+  }
+  const res = await fetch('/u/update', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({
+      displayName: document.getElementById('s-name').value.trim(),
+      username:    document.getElementById('s-username').value.trim(),
+      customStatus:document.getElementById('s-status').value.trim(),
+      bio:         document.getElementById('s-bio').value.trim(),
+      bannerColor: document.getElementById('s-banner').value,
+      bannerColor2:document.getElementById('s-banner2').value,
+      ...(avatarUrl ? {avatarUrl} : {})
+    })
+  });
+  const d = await res.json();
+  toast(d.success ? 'Profile saved!' : (d.error||'Error'), d.success ? 'success' : 'error');
+  return false;
+}
+
+function previewAvatar(e) {
+  const file = e.target.files[0];
+  if (file) document.getElementById('avatar-preview').src = URL.createObjectURL(file);
+}
+
+async function changePassword() {
+  const pwd = document.getElementById('new-pwd').value;
+  if (!pwd || pwd.length < 8) { toast('Min 8 characters','error'); return; }
+  try { await auth.currentUser.updatePassword(pwd); toast('Password updated!','success'); }
+  catch(e) { toast('Re-login required first','error'); }
+}
+
+async function deleteAccount() {
+  confirm2('Permanently delete your account? All data will be lost.', async () => {
+    const res  = await fetch('/u/delete', {method:'DELETE'});
+    const data = await res.json();
+    if (data.success) { await auth.signOut(); window.location.href = '/'; }
+    else toast(data.error,'error');
+  }, true);
+}
+
+function saveAppearance() {
+  const theme = document.querySelector('input[name="theme"]:checked')?.value || 'dark';
+  document.documentElement.setAttribute('data-theme', theme);
+  db.collection('users').doc(auth.currentUser.uid).update({'settings.theme': theme});
+  toast('Appearance saved!','success');
+}
+
+function saveNotifs() {
+  const settings = {};
+  ['mentions','dms','friendReqs','serverEvents','emailDigest'].forEach(k => {
+    settings[k] = document.getElementById(`notif-${k}`)?.checked;
+  });
+  db.collection('users').doc(auth.currentUser.uid).update({notifSettings: settings});
+  toast('Notifications saved!','success');
+}
+
+function savePrivacy() {
+  const p = {};
+  ['showOnlineStatus','allowFriendRequests','allowDMs','showMutualServers'].forEach(k=>{p[k]=document.getElementById(`priv-${k}`)?.checked});
+  db.collection('users').doc(auth.currentUser.uid).update({privacySettings:p});
+  toast('Privacy settings saved!','success');
+}
+
+async function exportGdpr() {
+  toast('Preparing your data export...','info',3000);
+  const res  = await fetch('/u/gdpr-export');
+  const data = await res.json();
+  const blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a'); a.href=url; a.download='my-connecto-data.json'; a.click();
+  toast('Data exported!','success');
+}
+
+async function setup2fa() { toast('2FA setup coming soon in beta!','info'); }
+
+async function loadLoginHistory() {
+  const res  = await fetch('/u/login-history');
+  const data = await res.json();
+  const el   = document.getElementById('login-history');
+  if (!data.history?.length) { el.innerHTML='<div style="padding:16px;color:var(--text-muted);font-size:13px">No login history yet</div>'; return; }
+  el.innerHTML = data.history.map(h=>`
+    <div style="display:flex;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;align-items:center">
+      <span style="font-size:16px">${h.method==='google'?'🌐':'🔑'}</span>
+      <div style="flex:1"><div>${new Date(h.timestamp*1000).toLocaleString()}</div><div style="color:var(--text-muted)">IP: ${h.ip||'N/A'} · ${h.device||'Unknown'}</div></div>
+      ${h.current?'<span class="badge badge-green">Current</span>':''}
+    </div>`).join('');
+}
+
+showSec('profile');
+</script>
+{% endblock %}
