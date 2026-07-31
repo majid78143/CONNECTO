@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}403 — Forbidden — CONNECTO{% endblock %}
+{% block body %}
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:40px">
+  <div>
+    <div style="font-size:80px;margin-bottom:16px">🚫</div>
+    <h1 style="font-size:56px;font-weight:800;color:var(--accent-yellow);margin-bottom:12px">403</h1>
+    <p style="font-size:20px;color:var(--text-secondary);margin-bottom:8px">Access Denied</p>
+    <p style="color:var(--text-muted);margin-bottom:32px">You don't have permission to view this page.</p>
+    <div style="display:flex;gap:12px;justify-content:center">
+      <a href="/" class="btn btn-primary">Go Home</a>
+      <a href="/auth/login" class="btn btn-secondary">Log In</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
