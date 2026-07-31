@@ -50,6 +50,8 @@ IMAGEBB_KEYS = [
     ] if k
 ]
 
+MAX_IMAGEBB_FILE_SIZE_MB = 32
+
 # ── Razorpay ─────────────────────────────────────────────────────────────────
 RAZORPAY_KEY_ID     = os.environ.get('RAZORPAY_KEY_ID','')
 RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET','')
