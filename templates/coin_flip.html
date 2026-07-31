@@ -1,0 +1,19 @@
+{% set game_name='Coin Flip' %}{% set game_icon='🎰' %}{% set game_type='custom' %}{% set max_coins=3 %}{% set how_to_play='Pick Heads or Tails. Set your bet. Win to double your bet, lose to lose it! Max bet: 50 coins.' %}
+{% extends "templates/games/game_base.html" %}
+{% block game_ui %}
+<div style="text-align:center">
+  <div id="coin-display" style="font-size:80px;margin-bottom:16px;animation:pulse 2s infinite">🪙</div>
+  <div id="coin-balance-display" style="font-size:14px;color:var(--text-muted);margin-bottom:20px">Loading...</div>
+  <div style="display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:20px">
+    <label style="font-size:14px;color:var(--text-secondary)">Bet:</label>
+    <input class="input" type="number" id="bet-amount" min="1" max="50" value="5" style="width:80px;text-align:center"/>
+    <span style="font-size:14px;color:var(--text-muted)">coins</span>
+  </div>
+  <div style="display:flex;gap:16px;justify-content:center;margin-bottom:16px">
+    <button class="btn btn-primary btn-lg" onclick="flipCoin('heads')">🪙 Heads</button>
+    <button class="btn btn-secondary btn-lg" onclick="flipCoin('tails')">💿 Tails</button>
+  </div>
+  <div id="result-text" style="font-size:14px;color:var(--text-secondary);min-height:24px"></div>
+</div>
+{% endblock %}
+{% block game_script %}<script src="/static/js/games/coin_flip.js"></script>{% endblock %}
