@@ -1,0 +1,90 @@
+/* ================================================================
+   CONNECTO — CSS Variables (Design Tokens)
+   ================================================================ */
+
+:root {
+  /* ── Colors — Dark Theme (default) ─────────────────────────── */
+  --bg-primary:        #0e0e10;
+  --bg-secondary:      #1a1a1f;
+  --bg-tertiary:       #111115;
+  --bg-card:           #1e1e24;
+  --bg-hover:          #2e2e38;
+  --bg-active:         #393945;
+  --bg-input:          #16161a;
+  --bg-modal:          #1a1a1f;
+  --bg-overlay:        rgba(0,0,0,0.75);
+
+  /* ── Accent Colors ──────────────────────────────────────────── */
+  --accent-blue:       #5865f2;
+  --accent-blue-hover: #4752c4;
+  --accent-purple:     #9b59b6;
+  --accent-green:      #57f287;
+  --accent-red:        #ed4245;
+  --accent-yellow:     #fee75c;
+  --accent-orange:     #f0a732;
+  --accent-teal:       #1abc9c;
+
+  /* ── Text ───────────────────────────────────────────────────── */
+  --text-primary:      #ffffff;
+  --text-secondary:    #a3a3b0;
+  --text-muted:        #5c5c6e;
+  --text-link:         #00b0f4;
+
+  /* ── Borders ────────────────────────────────────────────────── */
+  --border:            #2a2a35;
+  --border-focus:      #5865f2;
+
+  /* ── Sidebar ────────────────────────────────────────────────── */
+  --sidebar-server-w:  72px;
+  --sidebar-channel-w: 240px;
+
+  /* ── Shadows ────────────────────────────────────────────────── */
+  --shadow-sm:  0 1px 4px rgba(0,0,0,0.4);
+  --shadow-md:  0 4px 16px rgba(0,0,0,0.5);
+  --shadow-lg:  0 8px 32px rgba(0,0,0,0.6);
+  --shadow-glow:#5865f2;
+
+  /* ── Radius ─────────────────────────────────────────────────── */
+  --radius-sm:  4px;
+  --radius-md:  8px;
+  --radius-lg:  12px;
+  --radius-xl:  20px;
+  --radius-full:9999px;
+
+  /* ── Transitions ────────────────────────────────────────────── */
+  --transition: 150ms ease;
+  --transition-slow: 300ms ease;
+
+  /* ── Font ───────────────────────────────────────────────────── */
+  --font-main:  'Inter', sans-serif;
+  --font-logo:  'Space Grotesk', sans-serif;
+  --font-mono:  'JetBrains Mono', monospace;
+
+  /* ── Premium ────────────────────────────────────────────────── */
+  --premium-gold:  #ffd700;
+  --premium-glow:  rgba(255,215,0,0.25);
+  --premium-purple: #9b59b6;
+
+  /* ── Online Status ──────────────────────────────────────────── */
+  --status-online:   #57f287;
+  --status-away:     #fee75c;
+  --status-dnd:      #ed4245;
+  --status-offline:  #5c5c6e;
+}
+
+/* ── Light Theme ─────────────────────────────────────────────── */
+[data-theme="light"] {
+  --bg-primary:        #f2f3f5;
+  --bg-secondary:      #ffffff;
+  --bg-tertiary:       #e3e5e8;
+  --bg-card:           #ffffff;
+  --bg-hover:          #e9eaf0;
+  --bg-active:         #d9dbe8;
+  --bg-input:          #ebedf0;
+  --bg-modal:          #ffffff;
+  --bg-overlay:        rgba(0,0,0,0.5);
+  --text-primary:      #060607;
+  --text-secondary:    #4e5058;
+  --text-muted:        #80848e;
+  --border:            #d9dbe8;
+}
