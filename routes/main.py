@@ -48,7 +48,22 @@ def invite(code):
             break
     if not server_id:
         return render_template('pages/404.html', message="Invite link invalid or expired")
-    return render_template('app/invite.html', server_id=server_id, code=code)
+
+    server_doc = db_client.collection('servers').document(server_id).get()
+    if not server_doc.exists:
+        return render_template('pages/404.html', message="Server no longer exists")
+    server = server_doc.to_dict()
+    server['id'] = server_id
+
+    already_member = db_client.collection('servers').document(server_id) \
+        .collection('members').document(session['user_uid']).get().exists
+
+    return render_template(
+        'app/invite.html',
+        server=server,
+        invite_code=code,
+        already_member=already_member
+    )
 
 
 @main_bp.route('/m/<message_id>')
@@ -61,12 +76,23 @@ def message_link(message_id):
 def settings():
     if 'user_uid' not in session:
         return redirect(url_for('auth.login'))
-    return render_template('app/settings.html')
+    db_client = get_db()
+    user_doc = db_client.collection('users').document(session['user_uid']).get()
+    current_user = user_doc.to_dict() if user_doc.exists else {}
+    current_user['uid'] = session['user_uid']
+    return render_template('app/settings.html', current_user=current_user)
 
 
 @main_bp.route('/premium')
 def premium():
-    return render_template('premium/index.html')
+    current_user = None
+    if 'user_uid' in session:
+        db_client = get_db()
+        user_doc = db_client.collection('users').document(session['user_uid']).get()
+        if user_doc.exists:
+            current_user = user_doc.to_dict()
+            current_user['uid'] = session['user_uid']
+    return render_template('premium/index.html', current_user=current_user)
 
 
 @main_bp.route('/api/search')
