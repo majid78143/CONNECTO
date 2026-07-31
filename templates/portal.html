@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% block title %}Developer Portal — CONNECTO{% endblock %}
+{% block body %}
+<div style="min-height:100vh;background:var(--bg-primary)">
+  <!-- Header -->
+  <div style="background:var(--bg-tertiary);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between">
+    <div style="display:flex;align-items:center;gap:12px">
+      <a href="/" style="text-decoration:none;font-family:var(--font-logo);font-size:18px;font-weight:800;background:linear-gradient(135deg,#5865f2,#9b59b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent">CONNECTO</a>
+      <span style="color:var(--text-muted)">›</span>
+      <span style="font-weight:600">🤖 Developer Portal</span>
+    </div>
+    <a href="/app" class="btn btn-ghost btn-sm">← Back to App</a>
+  </div>
+
+  <div style="max-width:1000px;margin:0 auto;padding:40px 20px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;flex-wrap:wrap;gap:12px">
+      <div>
+        <h1 style="font-size:32px;font-weight:800;margin-bottom:6px">Developer Portal</h1>
+        <p style="color:var(--text-secondary)">Build bots and integrations for CONNECTO</p>
+      </div>
+      <button class="btn btn-primary" onclick="showCreateBot()">+ New Application</button>
+    </div>
+
+    <!-- My Bots -->
+    <div id="bots-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px">
+      <div style="text-align:center;padding:40px;color:var(--text-muted)"><div class="spinner" style="margin:0 auto 12px"></div>Loading bots...</div>
+    </div>
+
+    <!-- Docs -->
+    <div style="margin-top:48px">
+      <h2 style="font-size:22px;font-weight:700;margin-bottom:20px">📚 Quick Start</h2>
+      <div class="card" style="padding:24px">
+        <p style="color:var(--text-secondary);margin-bottom:16px">Use your bot token to send messages and interact with CONNECTO servers.</p>
+        <div style="background:var(--bg-input);border-radius:var(--radius-md);padding:16px;font-family:var(--font-mono);font-size:13px;color:var(--accent-green);overflow-x:auto">
+          <div style="color:var(--text-muted);margin-bottom:8px"># Example: Send a message via bot token</div>
+          <div>curl -X POST https://connecto.app/api/bot/message \</div>
+          <div>&nbsp;&nbsp;-H "Authorization: Bot YOUR_TOKEN" \</div>
+          <div>&nbsp;&nbsp;-H "Content-Type: application/json" \</div>
+          <div>&nbsp;&nbsp;-d '{"channel_id":"abc123","content":"Hello from my bot!"}'</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+async function loadBots() {
+  const res  = await fetch('/developers/api/bots');
+  const data = await res.json();
+  const grid = document.getElementById('bots-grid');
+  if (!data.bots?.length) {
+    grid.innerHTML = `<div class="card" style="padding:40px;text-align:center;cursor:pointer;border:2px dashed var(--border)" onclick="showCreateBot()">
+      <div style="font-size:36px;margin-bottom:12px">🤖</div>
+      <div style="font-size:16px;font-weight:600;margin-bottom:6px">Create your first bot</div>
+      <div style="font-size:13px;color:var(--text-muted)">Click to get started</div>
+    </div>`;
+    return;
+  }
+  grid.innerHTML = data.bots.map(b=>`
+    <div class="card" style="padding:20px">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+        <img src="${b.avatarUrl||'/static/icons/default-avatar.svg'}" style="width:48px;height:48px;border-radius:50%;object-fit:cover">
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:700;font-size:15px;display:flex;align-items:center;gap:8px">
+            ${sanitizeText(b.name)}
+            ${b.isOfficial?'<span class="badge badge-blue" style="font-size:10px">✅ OFFICIAL</span>':''}
+          </div>
+          <div style="font-size:12px;color:var(--text-muted);font-family:var(--font-mono)">${b.botId}</div>
+        </div>
+      </div>
+      <div style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${b.bio||'No description'}</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-secondary btn-sm" onclick="viewToken('${b.botId}')">🔑 Token</button>
+        <button class="btn btn-secondary btn-sm" onclick="editBot('${b.botId}','${sanitizeText(b.name)}','${sanitizeText(b.bio||'')}')">✏️ Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteBot('${b.botId}')">🗑️</button>
+      </div>
+    </div>`).join('');
+}
+
+function showCreateBot() {
+  openModal(`
+    <div class="modal-header"><h3 class="modal-title">Create New Application</h3><button class="modal-close" onclick="closeModal()">×</button></div>
+    <div class="form-group"><label class="form-label">App/Bot Name</label><input class="input" id="bot-name" placeholder="My Cool Bot" maxlength="32"/></div>
+    <div class="form-group">
+      <label class="form-label">Bio / Description</label>
+      <textarea class="textarea" id="bot-bio" placeholder="What does your bot do?"></textarea>
+      <div class="form-hint">Premium users can write HTML bio with animations</div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="createBot()">Create</button>
+    </div>`);
+}
+
+async function createBot() {
+  const name = document.getElementById('bot-name').value.trim();
+  const bio  = document.getElementById('bot-bio').value.trim();
+  if (!name) { toast('Bot name required','error'); return; }
+  const res  = await fetch('/developers/api/bots',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,bio})});
+  const data = await res.json();
+  if (data.success) {
+    closeModal();
+    toast('Bot created!','success');
+    openModal(`
+      <div class="modal-header"><h3 class="modal-title">🎉 Bot Created!</h3><button class="modal-close" onclick="closeModal();loadBots()">×</button></div>
+      <p style="color:var(--text-secondary);margin-bottom:12px">Save your bot token — it won't be shown again!</p>
+      <div style="background:var(--bg-input);border-radius:var(--radius-md);padding:14px;font-family:var(--font-mono);font-size:13px;word-break:break-all;color:var(--accent-green)">${data.token}</div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:14px" onclick="copyToClipboard('${data.token}')">📋 Copy Token</button>`);
+    loadBots();
+  } else { toast(data.error||'Failed','error'); }
+}
+
+async function viewToken(botId) {
+  const res  = await fetch(`/developers/api/bots/${botId}/token`);
+  const data = await res.json();
+  openModal(`
+    <div class="modal-header"><h3 class="modal-title">🔑 Bot Token</h3><button class="modal-close" onclick="closeModal()">×</button></div>
+    <div style="background:var(--bg-input);border-radius:var(--radius-md);padding:14px;font-family:var(--font-mono);font-size:13px;word-break:break-all;color:var(--accent-green)">${data.token||'Error loading token'}</div>
+    <div style="display:flex;gap:10px;margin-top:14px">
+      <button class="btn btn-primary btn-sm" onclick="copyToClipboard('${data.token}')">📋 Copy</button>
+      <button class="btn btn-danger btn-sm" onclick="regenToken('${botId}')">🔄 Regenerate</button>
+    </div>
+    <p style="font-size:12px;color:var(--accent-yellow);margin-top:10px">⚠️ Keep this token secret! Never share it publicly.</p>`);
+}
+
+async function regenToken(botId) {
+  confirm2('Regenerate token? Old token will stop working immediately.', async () => {
+    const res  = await fetch(`/developers/api/bots/${botId}/token/regenerate`,{method:'POST'});
+    const data = await res.json();
+    closeModal();
+    if (data.success) { toast('Token regenerated!','success'); viewToken(botId); }
+  }, true);
+}
+
+async function deleteBot(botId) {
+  confirm2('Delete this bot? This cannot be undone.', async () => {
+    await fetch(`/developers/api/bots/${botId}`,{method:'DELETE'});
+    toast('Bot deleted','success'); loadBots();
+  }, true);
+}
+
+function editBot(botId, name, bio) {
+  openModal(`
+    <div class="modal-header"><h3 class="modal-title">Edit Bot</h3><button class="modal-close" onclick="closeModal()">×</button></div>
+    <div class="form-group"><label class="form-label">Name</label><input class="input" id="edit-bot-name" value="${name}" maxlength="32"/></div>
+    <div class="form-group"><label class="form-label">Bio</label><textarea class="textarea" id="edit-bot-bio">${bio}</textarea></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveBot('${botId}')">Save</button>
+    </div>`);
+}
+
+async function saveBot(botId) {
+  const name = document.getElementById('edit-bot-name').value.trim();
+  const bio  = document.getElementById('edit-bot-bio').value.trim();
+  const res  = await fetch(`/developers/api/bots/${botId}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,bio})});
+  const data = await res.json();
+  if (data.success) { closeModal(); toast('Bot updated!','success'); loadBots(); }
+  else toast(data.error,'error');
+}
+
+loadBots();
+</script>
+{% endblock %}
