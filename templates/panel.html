@@ -1,0 +1,302 @@
+{% extends "base.html" %}
+{% block title %}Admin Panel — CONNECTO{% endblock %}
+{% block body %}
+<div style="min-height:100vh;background:var(--bg-primary)">
+  <!-- Top bar -->
+  <div style="background:var(--bg-tertiary);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="font-family:var(--font-logo);font-size:18px;font-weight:800;background:linear-gradient(135deg,#5865f2,#9b59b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent">CONNECTO</span>
+      <span style="color:var(--text-muted)">›</span>
+      <span style="font-weight:600">👑 Admin Panel</span>
+    </div>
+    <div style="display:flex;gap:10px">
+      <a href="/app" class="btn btn-ghost btn-sm">← Back to App</a>
+      <button class="btn btn-danger btn-sm" onclick="logout()">Logout</button>
+    </div>
+  </div>
+
+  <div style="display:flex;height:calc(100vh - 56px)">
+    <!-- Sidebar -->
+    <div style="width:220px;background:var(--bg-secondary);border-right:1px solid var(--border);padding:16px 10px;flex-shrink:0">
+      {% for section_id, icon, label in [('dashboard','📊','Dashboard'),('users','👥','Users'),('servers','🖥️','Servers'),('backup','💾','Backup & Restore'),('logs','📜','Audit Logs'),('announce','📢','Announcement')] %}
+      <button onclick="showSection('{{section_id}}')" id="nav-{{section_id}}" class="admin-nav-btn" style="display:flex;align-items:center;gap:10px;width:100%;padding:9px 12px;border-radius:var(--radius-sm);border:none;background:none;cursor:pointer;color:var(--text-secondary);font-size:14px;font-weight:500;transition:all var(--transition);text-align:left;margin-bottom:2px">
+        <span style="font-size:16px">{{icon}}</span>{{label}}
+      </button>
+      {% endfor %}
+    </div>
+
+    <!-- Content -->
+    <div style="flex:1;overflow-y:auto;padding:24px">
+
+      <!-- Dashboard -->
+      <div id="sec-dashboard">
+        <h2 style="font-size:24px;font-weight:700;margin-bottom:20px">📊 Dashboard</h2>
+        <div id="stats-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:28px">
+          <div class="skeleton" style="height:100px;border-radius:var(--radius-lg)"></div>
+          <div class="skeleton" style="height:100px;border-radius:var(--radius-lg)"></div>
+          <div class="skeleton" style="height:100px;border-radius:var(--radius-lg)"></div>
+          <div class="skeleton" style="height:100px;border-radius:var(--radius-lg)"></div>
+        </div>
+      </div>
+
+      <!-- Users -->
+      <div id="sec-users" class="hidden">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+          <h2 style="font-size:24px;font-weight:700">👥 Users</h2>
+          <input class="input" id="user-search" placeholder="Search username..." style="width:240px" oninput="filterUsers(this.value)"/>
+        </div>
+        <div class="card" style="padding:0;overflow:hidden">
+          <table style="width:100%;border-collapse:collapse" id="users-table">
+            <thead><tr style="background:var(--bg-secondary);font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted)">
+              <th style="padding:12px 16px;text-align:left">User</th>
+              <th style="padding:12px 16px;text-align:left">Role</th>
+              <th style="padding:12px 16px;text-align:left">Premium</th>
+              <th style="padding:12px 16px;text-align:left">Coins</th>
+              <th style="padding:12px 16px;text-align:left">Actions</th>
+            </tr></thead>
+            <tbody id="users-tbody"><tr><td colspan="5" style="padding:20px;text-align:center"><div class="spinner" style="margin:0 auto"></div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Backup -->
+      <div id="sec-backup" class="hidden">
+        <h2 style="font-size:24px;font-weight:700;margin-bottom:20px">💾 Backup & Restore</h2>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+          <div class="card" style="padding:24px">
+            <h3 style="margin-bottom:16px">📤 Export Data</h3>
+            <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px">
+              {% for val, label in [('users','Users'),('coins','Coins'),('servers','Servers'),('bots','Bots'),('payments','Payments')] %}
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px">
+                <input type="checkbox" name="export-include" value="{{val}}" checked> {{label}}
+              </label>
+              {% endfor %}
+            </div>
+            <div style="display:flex;gap:10px">
+              <a id="export-btn" href="/admin/api/backup/export" class="btn btn-primary btn-sm" onclick="buildExportUrl(event)">⬇️ Download JSON</a>
+              <button class="btn btn-secondary btn-sm" onclick="copyBackup()">📋 Copy JSON</button>
+            </div>
+          </div>
+          <div class="card" style="padding:24px">
+            <h3 style="margin-bottom:16px">📥 Restore Data</h3>
+            <div id="restore-drop" style="border:2px dashed var(--border);border-radius:var(--radius-lg);padding:32px;text-align:center;cursor:pointer;transition:all var(--transition)" ondragover="event.preventDefault();this.style.borderColor='var(--accent-blue)'" ondragleave="this.style.borderColor='var(--border)'" ondrop="handleRestoreDrop(event)" onclick="document.getElementById('restore-file').click()">
+              <div style="font-size:32px;margin-bottom:8px">📂</div>
+              <div style="font-size:14px;color:var(--text-muted)">Drop data.json or click to upload</div>
+            </div>
+            <input type="file" id="restore-file" accept=".json" style="display:none" onchange="handleRestoreFile(event)"/>
+            <div style="display:flex;gap:10px;margin-top:12px">
+              <select class="select" id="restore-mode" style="flex:1"><option value="merge">Merge Mode</option><option value="overwrite">Overwrite Mode</option></select>
+              <button class="btn btn-primary btn-sm" onclick="doRestore()">🔄 Restore</button>
+            </div>
+            <div id="restore-preview" style="margin-top:12px;font-size:13px;color:var(--text-muted)"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Announcement -->
+      <div id="sec-announce" class="hidden">
+        <h2 style="font-size:24px;font-weight:700;margin-bottom:20px">📢 Global Announcement</h2>
+        <div class="card" style="padding:24px;max-width:600px">
+          <div class="form-group">
+            <label class="form-label">Message (HTML supported)</label>
+            <textarea class="textarea" id="announce-content" rows="6" placeholder="<h2>Important Update!</h2><p>...</p>"></textarea>
+          </div>
+          <button class="btn btn-primary" onclick="sendAnnouncement()">📢 Send to All Users</button>
+        </div>
+      </div>
+
+      <!-- Logs -->
+      <div id="sec-logs" class="hidden">
+        <h2 style="font-size:24px;font-weight:700;margin-bottom:20px">📜 Audit Logs</h2>
+        <div class="card" style="padding:0;overflow:hidden">
+          <div id="logs-list"><div style="padding:20px;text-align:center"><div class="spinner" style="margin:0 auto"></div></div></div>
+        </div>
+      </div>
+
+      <!-- Servers -->
+      <div id="sec-servers" class="hidden">
+        <h2 style="font-size:24px;font-weight:700;margin-bottom:20px">🖥️ Servers</h2>
+        <p style="color:var(--text-muted)">Server management — verify, delete, and moderate servers.</p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<style>
+.admin-nav-btn:hover { background:var(--bg-hover) !important; color:var(--text-primary) !important; }
+.admin-nav-btn.active { background:var(--bg-active) !important; color:var(--text-primary) !important; }
+</style>
+
+<script>
+let allUsers = [];
+let restoreData = null;
+
+function showSection(id) {
+  document.querySelectorAll('[id^="sec-"]').forEach(el => el.classList.add('hidden'));
+  document.getElementById(`sec-${id}`)?.classList.remove('hidden');
+  document.querySelectorAll('.admin-nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(`nav-${id}`)?.classList.add('active');
+  if (id === 'dashboard') loadStats();
+  if (id === 'users') loadUsers();
+  if (id === 'logs') loadLogs();
+}
+
+async function loadStats() {
+  const res  = await fetch('/admin/api/stats');
+  const data = await res.json();
+  document.getElementById('stats-grid').innerHTML = `
+    ${[['👥','Total Users',data.totalUsers||0,'var(--accent-blue)'],['🖥️','Servers',data.totalServers||0,'var(--accent-purple)'],['🤖','Bots',data.totalBots||0,'var(--accent-teal)'],['💰','Revenue (INR)',`₹${data.totalRevenue||0}`,'var(--accent-yellow)']].map(([icon,label,val,color])=>`
+    <div class="card" style="padding:20px">
+      <div style="font-size:28px;margin-bottom:8px">${icon}</div>
+      <div style="font-size:28px;font-weight:800;color:${color}">${val}</div>
+      <div style="font-size:13px;color:var(--text-muted);margin-top:4px">${label}</div>
+    </div>`).join('')}`;
+}
+
+async function loadUsers() {
+  const res  = await fetch('/admin/api/users?per_page=100');
+  const data = await res.json();
+  allUsers = data.users || [];
+  renderUsers(allUsers);
+}
+
+function renderUsers(users) {
+  const tbody = document.getElementById('users-tbody');
+  if (!users.length) { tbody.innerHTML = '<tr><td colspan="5" style="padding:20px;text-align:center;color:var(--text-muted)">No users found</td></tr>'; return; }
+  tbody.innerHTML = users.map(u=>`<tr style="border-bottom:1px solid var(--border)">
+    <td style="padding:12px 16px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <img src="${u.avatarUrl||'/static/icons/default-avatar.svg'}" style="width:32px;height:32px;border-radius:50%">
+        <div>
+          <div style="font-weight:600;font-size:13px">${sanitizeText(u.displayName||'')}</div>
+          <div style="font-size:11px;color:var(--text-muted)">${sanitizeText(u.email||u.uid||'')}</div>
+        </div>
+      </div>
+    </td>
+    <td style="padding:12px 16px"><span class="badge ${u.role==='admin'?'badge-red':u.role==='moderator'?'badge-blue':'badge-blue'}">${u.role||'user'}</span></td>
+    <td style="padding:12px 16px">${u.isPremium?'<span class="badge badge-gold">💎 Premium</span>':'<span style="color:var(--text-muted);font-size:12px">Free</span>'}</td>
+    <td style="padding:12px 16px;font-weight:600">—</td>
+    <td style="padding:12px 16px">
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-sm btn-secondary" onclick="editUser('${u.uid}','${u.isPremium}','${u.role}')">✏️</button>
+        <button class="btn btn-sm btn-danger" onclick="banUser('${u.uid}',${!u.isBanned})">${u.isBanned?'🔓':'🚫'}</button>
+      </div>
+    </td>
+  </tr>`).join('');
+}
+
+function filterUsers(q) { renderUsers(allUsers.filter(u=>(u.displayName||'').toLowerCase().includes(q.toLowerCase())||(u.email||'').includes(q))); }
+
+function editUser(uid, isPremium, role) {
+  openModal(`
+    <div class="modal-header"><h3 class="modal-title">Edit User</h3><button class="modal-close" onclick="closeModal()">×</button></div>
+    <div class="form-group">
+      <label class="form-label">Role</label>
+      <select class="select" id="edit-role"><option value="user" ${role==='user'?'selected':''}>User</option><option value="moderator" ${role==='moderator'?'selected':''}>Moderator</option><option value="admin" ${role==='admin'?'selected':''}>Admin</option></select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Premium Plan</label>
+      <select class="select" id="edit-plan"><option value="">Remove Premium</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option><option value="yearly">Yearly</option></select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Profile Animation HTML (optional)</label>
+      <textarea class="textarea" id="edit-anim" rows="3" placeholder="<div style='animation:...'></div>"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Adjust Coins</label>
+      <input class="input" id="edit-coins" type="number" placeholder="e.g. 100 or -50"/>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveUser('${uid}')">Save</button>
+    </div>
+  `);
+}
+
+async function saveUser(uid) {
+  const role  = document.getElementById('edit-role').value;
+  const plan  = document.getElementById('edit-plan').value;
+  const anim  = document.getElementById('edit-anim').value.trim();
+  const coins = parseInt(document.getElementById('edit-coins').value||'0');
+
+  const calls = [];
+  calls.push(fetch(`/admin/api/users/${uid}/role`,    {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({role})}));
+  calls.push(fetch(`/admin/api/users/${uid}/premium`, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({isPremium:!!plan,plan:plan||'monthly'})}));
+  if (anim) calls.push(fetch(`/admin/api/users/${uid}/animation`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({html:anim})}));
+  if (coins) calls.push(fetch(`/admin/api/users/${uid}/coins`,   {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({amount:coins})}));
+  await Promise.all(calls);
+  closeModal(); toast('User updated!','success'); loadUsers();
+}
+
+async function banUser(uid, ban) {
+  await fetch(`/admin/api/users/${uid}/ban`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({banned:ban})});
+  toast(ban?'User banned':'User unbanned','success'); loadUsers();
+}
+
+function buildExportUrl(e) {
+  const checked = [...document.querySelectorAll('[name="export-include"]:checked')].map(c=>c.value);
+  document.getElementById('export-btn').href = `/admin/api/backup/export?include=${checked.join('&include=')}`;
+}
+
+async function copyBackup() {
+  const res  = await fetch('/admin/api/backup/export');
+  const text = await res.text();
+  copyToClipboard(text);
+}
+
+function handleRestoreDrop(e) {
+  e.preventDefault();
+  document.getElementById('restore-drop').style.borderColor='var(--border)';
+  const file = e.dataTransfer.files[0];
+  if (file) readRestoreFile(file);
+}
+function handleRestoreFile(e) { readRestoreFile(e.target.files[0]); }
+function readRestoreFile(file) {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      restoreData = JSON.parse(e.target.result);
+      const meta  = restoreData.meta || {};
+      document.getElementById('restore-preview').innerHTML = `<strong>Preview:</strong> ${meta.totalUsers||0} users, ${meta.totalServers||0} servers — Exported: ${meta.exportedAt||'?'}`;
+    } catch(err) { toast('Invalid JSON file','error'); }
+  };
+  reader.readAsText(file);
+}
+
+async function doRestore() {
+  if (!restoreData) { toast('Upload a backup file first','warning'); return; }
+  confirm2('Restore this backup? Existing data will be affected.', async () => {
+    const mode = document.getElementById('restore-mode').value;
+    const res  = await fetch('/admin/api/backup/restore',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({backup:restoreData,mode})});
+    const data = await res.json();
+    if (data.success) toast(`Restored! ${JSON.stringify(data.restored)}`,'success');
+    else toast(data.error||'Restore failed','error');
+  });
+}
+
+async function sendAnnouncement() {
+  const content = document.getElementById('announce-content').value.trim();
+  if (!content) { toast('Content required','warning'); return; }
+  const res  = await fetch('/admin/api/announcement',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({content})});
+  const data = await res.json();
+  if (data.success) { toast('Announcement sent!','success'); document.getElementById('announce-content').value=''; }
+  else toast(data.error,'error');
+}
+
+async function loadLogs() {
+  const res  = await fetch('/admin/api/logs');
+  const data = await res.json();
+  const list = document.getElementById('logs-list');
+  if (!data.logs?.length) { list.innerHTML='<div style="padding:20px;text-align:center;color:var(--text-muted)">No logs yet</div>'; return; }
+  list.innerHTML = data.logs.map(l=>`
+    <div style="display:flex;gap:14px;padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px">
+      <span style="color:var(--text-muted);white-space:nowrap">${new Date(l.timestamp*1000).toLocaleString()}</span>
+      <span style="color:var(--accent-blue)">${sanitizeText(l.adminEmail||'')}</span>
+      <span style="flex:1;color:var(--text-secondary)">${sanitizeText(l.message||'')}</span>
+    </div>`).join('');
+}
+
+showSection('dashboard');
+</script>
+{% endblock %}
