@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}CONNECTO{% endblock %}</title>
+  <meta name="description" content="{% block desc %}Connect. Chat. Create. — CONNECTO{% endblock %}"/>
+  <meta property="og:title" content="{% block og_title %}CONNECTO{% endblock %}"/>
+  <meta property="og:description" content="Connect. Chat. Create."/>
+  <meta property="og:image" content="/static/icons/og-image.png"/>
+  <link rel="icon" href="/static/icons/favicon.svg" type="image/svg+xml"/>
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <!-- CSS -->
+  <link rel="stylesheet" href="/static/css/variables.css"/>
+  <link rel="stylesheet" href="/static/css/main.css"/>
+  <link rel="stylesheet" href="/static/css/animations.css"/>
+  {% block extra_css %}{% endblock %}
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+</head>
+<body>
+{% block body %}{% endblock %}
+
+<!-- Toast container -->
+<div id="toast-container" class="toast-container"></div>
+
+<!-- Cookie consent -->
+<div id="cookie-banner" class="cookie-banner hidden">
+  <div class="cookie-content">
+    <span>🍪 We use cookies to improve your experience on CONNECTO.</span>
+    <div class="cookie-actions">
+      <button onclick="acceptCookies()" class="btn btn-primary btn-sm">Accept All</button>
+      <button onclick="declineCookies()" class="btn btn-ghost btn-sm">Necessary Only</button>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase Init -->
+<script>
+  const firebaseConfig = {{ firebase_config | tojson }};
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db   = firebase.firestore();
+  const rtdb = firebase.database();
+</script>
+<script src="/static/js/firebase-config.js"></script>
+<script src="/static/js/utils.js"></script>
+{% block extra_js %}{% endblock %}
+<script>
+  // Cookie consent
+  if (!localStorage.getItem('cookieConsent')) {
+    document.getElementById('cookie-banner').classList.remove('hidden');
+  }
+  function acceptCookies() {
+    localStorage.setItem('cookieConsent','all');
+    document.getElementById('cookie-banner').classList.add('hidden');
+  }
+  function declineCookies() {
+    localStorage.setItem('cookieConsent','necessary');
+    document.getElementById('cookie-banner').classList.add('hidden');
+  }
+</script>
+</body>
+</html>
