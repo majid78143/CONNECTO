@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}Premium — CONNECTO{% endblock %}
+{% block body %}
+<div style="min-height:100vh;background:var(--bg-primary);padding:80px 20px 60px">
+  <div style="max-width:900px;margin:0 auto;text-align:center">
+    <div style="margin-bottom:32px">
+      <div style="font-size:64px;margin-bottom:12px;animation:bounce 2s infinite">💎</div>
+      <h1 style="font-size:48px;font-weight:800;margin-bottom:12px;background:linear-gradient(135deg,#ffd700,#9b59b6,#ffd700);background-size:200% 200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:gradientBorder 4s linear infinite">CONNECTO Premium</h1>
+      <p style="color:var(--text-secondary);font-size:18px">Unlock the full experience. Stand out from the crowd.</p>
+    </div>
+
+    <!-- Plan selector -->
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:48px" id="plans-grid">
+      {% for plan_id, label, price, duration, saved in [
+        ('weekly','Weekly','₹49','7 days',''),
+        ('monthly','Monthly','₹149','30 days','Save 24%'),
+        ('yearly','Yearly','₹999','365 days','Save 44%'),
+      ] %}
+      <div class="card plan-card" id="plan-{{plan_id}}" onclick="selectPlan('{{plan_id}}')"
+           style="padding:28px;min-width:220px;cursor:pointer;transition:all var(--transition);border:2px solid transparent;position:relative">
+        {% if saved %}<div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--accent-green);color:#fff;padding:3px 12px;border-radius:var(--radius-full);font-size:11px;font-weight:700">{{saved}}</div>{% endif %}
+        <div style="font-size:16px;font-weight:700;margin-bottom:6px">{{label}}</div>
+        <div style="font-size:36px;font-weight:800;background:linear-gradient(135deg,#ffd700,#9b59b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent">{{price}}</div>
+        <div style="color:var(--text-muted);font-size:13px;margin-top:4px">/ {{duration}}</div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Features list -->
+    <div class="card premium-border" style="padding:32px;max-width:600px;margin:0 auto 40px">
+      <h3 style="font-size:20px;margin-bottom:20px">✨ What you get</h3>
+      <div style="display:flex;flex-direction:column;gap:12px;text-align:left">
+        {% for feat in ['💎 Premium Gold badge on your profile','🖼️ Animated profile card (custom HTML)','📝 HTML messages with formatting & animations','📖 5000-char HTML bio (vs 500 for free)','🎨 Custom emoji support in your servers','🎭 Premium sticker pack (20+ exclusive stickers)','🪙 500 bonus CONNECTO Coins every month','🔔 Priority notifications & faster message delivery','🛡️ Exclusive premium-only channels in CONNECTO server'] %}
+        <div style="display:flex;align-items:center;gap:12px;font-size:14px">
+          <span>{{feat.split(' ')[0]}}</span>
+          <span style="color:var(--text-secondary)">{{feat.split(' ',1)[1]}}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Payment button -->
+    <div id="pay-area">
+      <button class="btn btn-premium btn-lg" id="pay-btn" onclick="startPayment()" disabled style="font-size:16px;padding:14px 40px">
+        💳 Select a Plan to Continue
+      </button>
+      <p style="color:var(--text-muted);font-size:13px;margin-top:12px">Secured by Razorpay · Auto-renewed · Cancel anytime</p>
+    </div>
+
+    <!-- Already premium -->
+    {% if current_user and current_user.isPremium %}
+    <div style="background:rgba(87,242,135,.1);border:1px solid var(--accent-green);border-radius:var(--radius-lg);padding:16px 24px;margin-top:32px;color:var(--accent-green);font-weight:600">
+      ✅ You are already a Premium member! Expires: {{ current_user.premiumExpiry or 'Never' }}
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+let selectedPlan = null;
+
+function selectPlan(planId) {
+  selectedPlan = planId;
+  document.querySelectorAll('.plan-card').forEach(c => {
+    c.style.borderColor = c.id === `plan-${planId}` ? 'var(--accent-blue)' : 'transparent';
+    c.style.transform   = c.id === `plan-${planId}` ? 'scale(1.04)' : '';
+  });
+  const btn = document.getElementById('pay-btn');
+  btn.disabled    = false;
+  btn.textContent = `💳 Get ${planId.charAt(0).toUpperCase()+planId.slice(1)} Premium`;
+}
+
+async function startPayment() {
+  if (!selectedPlan) return;
+  try {
+    const res  = await fetch('/payments/create-order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ plan: selectedPlan })
+    });
+    const data = await res.json();
+    if (!data.order_id) { toast(data.error || 'Login required', 'error'); return; }
+
+    const options = {
+      key:         data.key_id,
+      amount:      data.amount,
+      currency:    data.currency,
+      name:        'CONNECTO Premium',
+      description: `${selectedPlan.charAt(0).toUpperCase()+selectedPlan.slice(1)} Plan`,
+      image:       '/static/icons/logo.svg',
+      order_id:    data.order_id,
+      handler: async function(resp) {
+        const vRes  = await fetch('/payments/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...resp, plan: selectedPlan })
+        });
+        const vData = await vRes.json();
+        if (vData.success) {
+          toast('🎉 Welcome to CONNECTO Premium!', 'success', 5000);
+          setTimeout(() => window.location.href = '/app', 2000);
+        } else { toast('Payment verification failed', 'error'); }
+      },
+      prefill: {},
+      theme: { color: '#5865f2' },
+    };
+    new Razorpay(options).open();
+  } catch(e) { toast('Payment failed. Try again.', 'error'); }
+}
+</script>
+{% endblock %}
