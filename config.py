@@ -80,9 +80,15 @@ GAMES = {
     'coin_flip':    {'name':'Coin Flip',     'icon':'🎰', 'max_coins':3,  'type':'custom'},
     'color_match':  {'name':'Color Match',   'icon':'🎨', 'max_coins':7,  'type':'custom'},
 }
-DAILY_CLAIM_COINS  = 50
-DAILY_CLAIM_HOURS  = 24
 
+DAILY_CLAIM_COINS = 50
+DAILY_CLAIM_HOURS = 24
+
+# Required by routes/games.py
+GAME_RATE_LIMIT = {
+    "max_games_per_hour": 50,
+    "cooldown_seconds": 5
+}
 # ── Server Templates ──────────────────────────────────────────────────────────
 SERVER_TEMPLATES = {
     'gaming': {
