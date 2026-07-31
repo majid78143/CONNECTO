@@ -16,6 +16,8 @@ ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', '')
 
 # ── Firebase ─────────────────────────────────────────────────────────────────
 FIREBASE_SERVICE_ACCOUNT_JSON = os.environ.get('FIREBASE_SERVICE_ACCOUNT', '{}')
+FIREBASE_SERVICE_ACCOUNT = FIREBASE_SERVICE_ACCOUNT_JSON
+
 FIREBASE_PROJECT_ID  = os.environ.get('FIREBASE_PROJECT_ID',  'connecto-5814d')
 FIREBASE_AUTH_DOMAIN = os.environ.get('FIREBASE_AUTH_DOMAIN', 'connecto-5814d.firebaseapp.com')
 FIREBASE_DB_URL      = os.environ.get('FIREBASE_DATABASE_URL','https://connecto-5814d-default-rtdb.firebaseio.com')
