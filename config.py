@@ -37,6 +37,8 @@ FIREBASE_CLIENT_CONFIG = {
     'measurementId':     FIREBASE_MEASUREMENT_ID,
 }
 
+FIREBASE_CONFIG = FIREBASE_CLIENT_CONFIG
+
 # ── ImageBB ──────────────────────────────────────────────────────────────────
 IMAGEBB_KEYS = [
     k for k in [
