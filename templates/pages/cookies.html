@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Cookie Policy — CONNECTO{% endblock %}
+{% block body %}
+<div style="min-height:100vh;background:var(--bg-primary);padding:80px 20px 60px">
+  <div style="max-width:800px;margin:0 auto">
+    <h1 style="font-size:36px;font-weight:800;margin-bottom:8px">Cookie Policy</h1>
+    <p style="color:var(--text-muted);margin-bottom:40px">Last updated: January 1, 2025</p>
+    {% for title, body in [
+      ('What are cookies?','Cookies are small text files stored on your device by your browser. They help us provide a better experience.'),
+      ('Cookies we use','Session cookies (required for login), preference cookies (theme, language), and analytics cookies (anonymous usage stats).'),
+      ('Essential cookies','These are required for CONNECTO to function. They cannot be disabled. They store your session and CSRF token.'),
+      ('Analytics cookies','We use anonymous analytics to improve the platform. No personal data is collected in these cookies.'),
+      ('Third-party cookies','Razorpay sets cookies during payment processing. These are governed by Razorpay\'s privacy policy.'),
+      ('Managing cookies','You can control cookies via your browser settings. Disabling essential cookies will prevent login.'),
+      ('Contact','Cookie questions: privacy@connecto.app'),
+    ] %}
+    <div style="margin-bottom:24px"><h2 style="font-size:20px;font-weight:700;margin-bottom:8px">{{title}}</h2><p style="color:var(--text-secondary);line-height:1.8">{{body}}</p></div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

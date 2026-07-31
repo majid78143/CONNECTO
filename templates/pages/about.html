@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}About — CONNECTO{% endblock %}
+{% block body %}
+<div style="min-height:100vh;background:var(--bg-primary);padding:80px 20px 60px">
+  <div style="max-width:800px;margin:0 auto">
+    <h1 style="font-size:40px;font-weight:800;margin-bottom:12px">About CONNECTO</h1>
+    <p style="color:var(--text-secondary);font-size:16px;margin-bottom:40px">The next-generation community platform</p>
+    <div class="card" style="padding:32px;margin-bottom:24px">
+      <h2 style="margin-bottom:12px">Our Mission</h2>
+      <p style="color:var(--text-secondary);line-height:1.8">CONNECTO was built for one reason: to create the most powerful, most feature-rich, and most accessible chat platform the world has ever seen. We believe communities deserve tools that grow with them — not platforms that hold them back.</p>
+    </div>
+    <div class="card" style="padding:32px;margin-bottom:24px">
+      <h2 style="margin-bottom:12px">What Makes Us Different</h2>
+      <ul style="color:var(--text-secondary);line-height:2">
+        <li>🤖 Built-in bot platform — no third-party required</li>
+        <li>🎮 10 games with a real coin economy</li>
+        <li>💎 Premium features that truly go beyond</li>
+        <li>🔒 Privacy-first, no ads (except in Games by choice)</li>
+        <li>🌐 Built in India, for the world</li>
+      </ul>
+    </div>
+    <div style="text-align:center;margin-top:40px">
+      <a href="/auth/register" class="btn btn-primary btn-lg">Join CONNECTO Today</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

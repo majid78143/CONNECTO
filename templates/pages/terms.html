@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Terms of Service — CONNECTO{% endblock %}
+{% block body %}
+<div style="min-height:100vh;background:var(--bg-primary);padding:80px 20px 60px">
+  <div style="max-width:800px;margin:0 auto">
+    <h1 style="font-size:36px;font-weight:800;margin-bottom:8px">Terms of Service</h1>
+    <p style="color:var(--text-muted);margin-bottom:40px">Last updated: January 1, 2025</p>
+    {% for title, body in [
+      ('1. Acceptance','By accessing CONNECTO, you agree to be bound by these Terms. If you disagree, do not use the platform.'),
+      ('2. Eligibility','You must be at least 13 years old to use CONNECTO. Users under 18 require parental consent.'),
+      ('3. Account Responsibility','You are responsible for your account and all activity under it. Keep your password secure.'),
+      ('4. Prohibited Conduct','No harassment, spam, illegal content, or impersonation. Violations result in immediate ban.'),
+      ('5. Content Ownership','You retain rights to your content. By posting, you grant CONNECTO a license to display it.'),
+      ('6. Premium Subscriptions','Premium plans auto-renew. Cancel anytime. No refunds for partial periods unless required by law.'),
+      ('7. Limitation of Liability','CONNECTO is provided "as is". We are not liable for indirect damages or data loss.'),
+      ('8. Changes','We may update these Terms. Continued use means acceptance of the new Terms.'),
+      ('9. Contact','Questions? Email: legal@connecto.app'),
+    ] %}
+    <div style="margin-bottom:28px">
+      <h2 style="font-size:20px;font-weight:700;margin-bottom:8px">{{title}}</h2>
+      <p style="color:var(--text-secondary);line-height:1.8">{{body}}</p>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

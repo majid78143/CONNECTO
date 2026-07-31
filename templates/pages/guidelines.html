@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Community Guidelines — CONNECTO{% endblock %}
+{% block body %}
+<div style="min-height:100vh;background:var(--bg-primary);padding:80px 20px 60px">
+  <div style="max-width:800px;margin:0 auto">
+    <h1 style="font-size:36px;font-weight:800;margin-bottom:8px">Community Guidelines</h1>
+    <p style="color:var(--text-muted);margin-bottom:40px">Rules that keep CONNECTO safe and fun for everyone</p>
+    {% for icon, title, body in [
+      ('🤝','Be Respectful','Treat all users with kindness. Harassment, hate speech, and bullying are strictly prohibited and will result in immediate bans.'),
+      ('🚫','No Illegal Content','Do not share illegal content, CSAM, pirated material, or anything that violates applicable laws.'),
+      ('🛡️','Protect Privacy','Do not share personal information of others without their consent. Doxxing is a permanent ban offense.'),
+      ('💬','No Spam','Do not spam messages, mentions, or DMs. Repeated violations result in muting or ban.'),
+      ('🤖','Bot Rules','Bots must follow our Bot Guidelines. Bots that abuse the API or spam will be revoked immediately.'),
+      ('✅','Server Rules','Server owners are responsible for their communities. Servers that violate these guidelines will be removed.'),
+      ('📢','Reporting','Use the report feature to flag violations. Do not take matters into your own hands.'),
+    ] %}
+    <div class="card" style="padding:20px 24px;margin-bottom:14px;display:flex;gap:16px">
+      <span style="font-size:24px;flex-shrink:0">{{icon}}</span>
+      <div><h3 style="margin-bottom:6px">{{title}}</h3><p style="color:var(--text-secondary);font-size:14px;line-height:1.6">{{body}}</p></div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

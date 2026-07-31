@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}404 — Page Not Found — CONNECTO{% endblock %}
+{% block body %}
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:40px">
+  <div>
+    <div style="font-size:96px;margin-bottom:16px;animation:bounce 2s infinite">🔍</div>
+    <h1 style="font-size:56px;font-weight:800;background:linear-gradient(135deg,#5865f2,#9b59b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:12px">404</h1>
+    <p style="font-size:20px;color:var(--text-secondary);margin-bottom:8px">Page not found</p>
+    <p style="color:var(--text-muted);margin-bottom:32px">This page got disconnected from the server. Let's get you back!</p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+      <a href="/" class="btn btn-primary">Go Home</a>
+      <a href="/app" class="btn btn-secondary">Open App</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

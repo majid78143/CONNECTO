@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}DMCA — CONNECTO{% endblock %}
+{% block body %}
+<div style="min-height:100vh;background:var(--bg-primary);padding:80px 20px 60px">
+  <div style="max-width:800px;margin:0 auto">
+    <h1 style="font-size:36px;font-weight:800;margin-bottom:8px">DMCA Policy</h1>
+    <p style="color:var(--text-muted);margin-bottom:40px">Copyright Infringement Notice Procedure</p>
+    <div class="card" style="padding:28px;margin-bottom:24px">
+      <h2 style="margin-bottom:12px">Filing a DMCA Notice</h2>
+      <p style="color:var(--text-secondary);line-height:1.8;margin-bottom:16px">If you believe content on CONNECTO infringes your copyright, send a notice to <strong>dmca@connecto.app</strong> including:</p>
+      <ul style="color:var(--text-secondary);line-height:2">
+        <li>Your full name and contact information</li>
+        <li>Identification of the copyrighted work</li>
+        <li>URL(s) of the infringing content</li>
+        <li>A statement of good faith belief</li>
+        <li>Your electronic or physical signature</li>
+      </ul>
+    </div>
+    <div class="card" style="padding:28px">
+      <h2 style="margin-bottom:12px">Counter-Notice</h2>
+      <p style="color:var(--text-secondary);line-height:1.8">If you believe your content was wrongly removed, you may file a counter-notice. We will restore content after the statutory waiting period if no court action is filed.</p>
+    </div>
+    <p style="color:var(--text-muted);font-size:13px;margin-top:24px">📧 dmca@connecto.app · Response within 3–5 business days</p>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Privacy Policy — CONNECTO{% endblock %}
+{% block body %}
+<div style="min-height:100vh;background:var(--bg-primary);padding:80px 20px 60px">
+  <div style="max-width:800px;margin:0 auto">
+    <h1 style="font-size:36px;font-weight:800;margin-bottom:8px">Privacy Policy</h1>
+    <p style="color:var(--text-muted);margin-bottom:40px">Last updated: January 1, 2025</p>
+    {% for title, body in [
+      ('Data We Collect','We collect: email, display name, messages, servers you join, payment information (via Razorpay), and usage analytics.'),
+      ('How We Use It','To provide the platform, personalize your experience, process payments, and send important notifications.'),
+      ('Data Storage','All data is stored securely in Firebase (Google Cloud). We do not sell your data to third parties.'),
+      ('Cookies','We use session cookies for authentication. See our Cookie Policy for details.'),
+      ('Image Storage','Images are stored via ImageBB. We proxy all uploads so your real IP is protected from ImageBB.'),
+      ('Your Rights (GDPR)','You may export, correct, or delete your data at any time via Settings → Export My Data.'),
+      ('Children\'s Privacy','CONNECTO is not intended for children under 13. We delete accounts found to belong to minors.'),
+      ('Contact','Data concerns: privacy@connecto.app'),
+    ] %}
+    <div style="margin-bottom:28px">
+      <h2 style="font-size:20px;font-weight:700;margin-bottom:8px">{{title}}</h2>
+      <p style="color:var(--text-secondary);line-height:1.8">{{body}}</p>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

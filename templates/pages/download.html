@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Download CONNECTO{% endblock %}
+{% block body %}
+<div style="min-height:100vh;background:var(--bg-primary);padding:80px 20px 60px">
+  <div style="max-width:700px;margin:0 auto;text-align:center">
+    <div style="font-size:64px;margin-bottom:16px">📱</div>
+    <h1 style="font-size:40px;font-weight:800;margin-bottom:12px">Download CONNECTO</h1>
+    <p style="color:var(--text-secondary);font-size:16px;margin-bottom:48px">Available on all platforms — coming soon!</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;max-width:600px;margin:0 auto">
+      {% for icon, platform, status in [('🌐','Web App','Available Now'),('🤖','Android','Coming Soon'),('🍎','iOS','Coming Soon'),('🖥️','Desktop','Coming Soon')] %}
+      <div class="card" style="padding:28px;opacity:{{ '1' if status=='Available Now' else '0.6' }}">
+        <div style="font-size:40px;margin-bottom:12px">{{icon}}</div>
+        <div style="font-weight:700;margin-bottom:6px">{{platform}}</div>
+        <div style="font-size:12px;color:{{ 'var(--accent-green)' if status=='Available Now' else 'var(--text-muted)' }}">{{status}}</div>
+        {% if status=='Available Now' %}
+        <a href="/app" class="btn btn-primary btn-sm" style="margin-top:14px">Open App →</a>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    <div style="margin-top:48px;padding:24px;background:rgba(88,101,242,.08);border:1px solid rgba(88,101,242,.2);border-radius:var(--radius-lg)">
+      <p style="color:var(--text-secondary);font-size:14px">🔔 <strong>Get notified</strong> when mobile apps launch:</p>
+      <div style="display:flex;gap:10px;justify-content:center;margin-top:14px;flex-wrap:wrap">
+        <input class="input" placeholder="your@email.com" style="width:250px"/>
+        <button class="btn btn-primary" onclick="toast('You\'re on the waitlist!','success')">Notify Me</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

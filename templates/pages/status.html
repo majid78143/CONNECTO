@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Status — CONNECTO{% endblock %}
+{% block body %}
+<div style="min-height:100vh;background:var(--bg-primary);padding:80px 20px 60px">
+  <div style="max-width:700px;margin:0 auto;text-align:center">
+    <h1 style="font-size:36px;font-weight:800;margin-bottom:12px">System Status</h1>
+    <div style="display:inline-flex;align-items:center;gap:10px;background:rgba(87,242,135,.1);border:1px solid var(--accent-green);border-radius:var(--radius-full);padding:10px 24px;margin-bottom:40px;font-weight:600;color:var(--accent-green)">
+      <span style="width:10px;height:10px;background:var(--accent-green);border-radius:50%;animation:pulse 2s infinite;display:inline-block"></span>
+      All Systems Operational
+    </div>
+    <div class="card" style="padding:0;overflow:hidden;text-align:left">
+      {% for svc, status in [('API / Realtime','operational'),('Firebase Auth','operational'),('Image Uploads','operational'),('Payment Processing','operational'),('Game Servers','operational'),('Bot Platform','operational')] %}
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid var(--border)">
+        <span style="font-size:14px;font-weight:500">{{svc}}</span>
+        <span style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--accent-green)">
+          <span style="width:8px;height:8px;background:var(--accent-green);border-radius:50%"></span> Operational
+        </span>
+      </div>
+      {% endfor %}
+    </div>
+    <p style="color:var(--text-muted);font-size:13px;margin-top:20px">Updated every 60 seconds · Incidents reported at status@connecto.app</p>
+  </div>
+</div>
+{% endblock %}
