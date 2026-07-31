@@ -1,0 +1,10 @@
+{% set game_name='Math Quiz' %}{% set game_icon='🧮' %}{% set game_type='custom' %}{% set max_coins=6 %}{% set how_to_play='15 questions. Pick the correct answer fast! Difficulty increases every 5 questions. Streak bonus applies.' %}
+{% extends "templates/games/game_base.html" %}
+{% block game_ui %}
+<div style="text-align:center">
+  <div id="math-question" style="font-size:48px;font-weight:800;margin-bottom:24px;color:var(--text-primary)">Loading...</div>
+  <div id="math-choices" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:320px;margin:0 auto 16px"></div>
+  <div id="math-feedback" style="font-size:15px;font-weight:600;min-height:24px"></div>
+</div>
+{% endblock %}
+{% block game_script %}<script src="/static/js/games/math_quiz.js"></script>{% endblock %}

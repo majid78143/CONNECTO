@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}{{ game_name }} — CONNECTO Games{% endblock %}
+{% block body %}
+<div style="min-height:100vh;background:var(--bg-primary);padding:70px 20px 40px">
+  <!-- Adsterra Smart Banner -->
+  {% if config.ADSTERRA_SMART_BANNER_CODE %}
+  <div>{{ config.ADSTERRA_SMART_BANNER_CODE | safe }}</div>
+  {% endif %}
+
+  <div style="max-width:900px;margin:0 auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <a href="/games" class="btn btn-ghost btn-sm">← Games</a>
+        <h1 style="font-size:24px;font-weight:800">{{ game_icon }} {{ game_name }}</h1>
+      </div>
+      <div style="display:flex;align-items:center;gap:16px">
+        <div style="font-size:13px;color:var(--text-muted)">
+          Score: <span id="score" style="font-weight:700;color:var(--accent-yellow)">0</span>
+          {% if show_best %} · Best: <span id="best" style="font-weight:700">0</span>{% endif %}
+          {% if show_timer %} · <span id="timer" style="font-weight:700">0s</span>{% endif %}
+        </div>
+        <button class="btn btn-secondary btn-sm" id="restart-btn" onclick="restartGame()">🔄 Restart</button>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:20px;flex-wrap:wrap">
+      <!-- Main game area -->
+      <div style="flex:1;min-width:300px">
+        {% if game_type == 'canvas' %}
+        <canvas id="game-canvas" width="{{ canvas_w or 420 }}" height="{{ canvas_h or 520 }}"
+          style="border-radius:var(--radius-xl);display:block;max-width:100%;cursor:pointer;background:#0e0e10"></canvas>
+        {% else %}
+        <div class="card" style="padding:24px">
+          {% block game_ui %}{% endblock %}
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Sidebar -->
+      <div style="width:220px;flex-shrink:0">
+        <div class="card" style="padding:16px;margin-bottom:16px">
+          <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);margin-bottom:10px">How to Play</div>
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.6">{{ how_to_play }}</div>
+        </div>
+        <div class="card" style="padding:16px">
+          <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);margin-bottom:10px">💰 Coins</div>
+          <div style="font-size:13px;color:var(--text-secondary)">Earn up to <strong style="color:var(--accent-yellow)">{{ max_coins }} coins</strong> per game!</div>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:10px;font-size:14px;font-weight:700">🪙 <span id="my-coins">—</span></div>
+        </div>
+
+        <!-- Adsterra Banner -->
+        {% if config.ADSTERRA_BANNER_URL %}
+        <div style="margin-top:16px;text-align:center">
+          <a href="{{ config.ADSTERRA_BANNER_URL }}" target="_blank" rel="noopener">
+            <img src="{{ config.ADSTERRA_BANNER_URL }}" alt="Ad" style="max-width:100%;border-radius:var(--radius-md)" loading="lazy"/>
+          </a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+fetch('/games/api/balance').then(r=>r.json()).then(d=>{document.getElementById('my-coins').textContent=(d.balance||0)+' coins';});
+</script>
+{% block game_script %}{% endblock %}
+{% endblock %}

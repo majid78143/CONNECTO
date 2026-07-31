@@ -1,0 +1,9 @@
+{% set game_name='Memory Cards' %}{% set game_icon='🃏' %}{% set game_type='custom' %}{% set show_timer=True %}{% set max_coins=15 %}{% set how_to_play='Flip cards to find matching pairs. Complete all pairs with fewest moves to earn more coins!' %}
+{% extends "templates/games/game_base.html" %}
+{% block game_ui %}
+<div style="text-align:center;margin-bottom:12px">
+  Moves: <strong id="moves">0</strong>
+</div>
+<div id="memory-grid" style="display:grid;grid-template-columns:repeat(4,80px);gap:10px;justify-content:center"></div>
+{% endblock %}
+{% block game_script %}<script src="/static/js/games/memory_cards.js"></script>{% endblock %}

@@ -1,0 +1,18 @@
+{% set game_name='Word Scramble' %}{% set game_icon='🔤' %}{% set game_type='custom' %}{% set show_timer=True %}{% set max_coins=8 %}{% set how_to_play='Unscramble the letters to form the correct word. Type fast for bonus points. Use hints if stuck!' %}
+{% extends "templates/games/game_base.html" %}
+{% block game_ui %}
+<div style="text-align:center">
+  <div id="scrambled-word" style="font-size:40px;font-weight:800;letter-spacing:8px;color:var(--accent-blue);margin-bottom:16px;font-family:var(--font-mono)">LOADING</div>
+  <div id="hint-area" style="font-size:13px;color:var(--text-muted);margin-bottom:16px">—</div>
+  <div style="display:flex;gap:10px;justify-content:center;margin-bottom:12px">
+    <input class="input" id="word-input" placeholder="Type your answer..." style="width:220px;text-align:center"/>
+    <button class="btn btn-primary" onclick="checkWord()">✓</button>
+  </div>
+  <div style="display:flex;gap:8px;justify-content:center;margin-bottom:16px">
+    <button class="btn btn-ghost btn-sm" onclick="showHint()">💡 Hint</button>
+    <button class="btn btn-ghost btn-sm" onclick="skipWord()">⏭️ Skip</button>
+  </div>
+  <div id="feedback" style="font-size:15px;font-weight:600;min-height:24px"></div>
+</div>
+{% endblock %}
+{% block game_script %}<script src="/static/js/games/word_scramble.js"></script>{% endblock %}

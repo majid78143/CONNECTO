@@ -1,0 +1,14 @@
+{% set game_name='Number Guess' %}{% set game_icon='🎯' %}{% set game_type='custom' %}{% set max_coins=10 %}{% set how_to_play='Guess the secret number between 1–100 in 7 attempts. More attempts left = more coins!' %}
+{% extends "templates/games/game_base.html" %}
+{% block game_ui %}
+<div style="text-align:center">
+  <div id="guess-msg" style="font-size:16px;margin-bottom:16px;color:var(--text-secondary)">Loading...</div>
+  <div style="margin-bottom:12px;color:var(--text-muted);font-size:14px">Attempts left: <strong id="attempts-left">7</strong></div>
+  <div style="display:flex;gap:10px;justify-content:center;margin-bottom:16px">
+    <input class="input" id="guess-input" type="number" min="1" max="100" placeholder="Your guess (1–100)" style="width:200px;text-align:center;font-size:18px"/>
+    <button class="btn btn-primary" id="guess-btn" onclick="makeGuess()">Guess!</button>
+  </div>
+  <div id="guess-history" style="max-height:200px;overflow-y:auto"></div>
+</div>
+{% endblock %}
+{% block game_script %}<script src="/static/js/games/number_guess.js"></script>{% endblock %}

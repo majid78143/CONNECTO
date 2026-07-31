@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}Games — CONNECTO{% endblock %}
+{% block body %}
+<!-- Adsterra Smart Banner -->
+{% if config.ADSTERRA_SMART_BANNER_CODE %}
+<div id="adsterra-smart-banner">{{ config.ADSTERRA_SMART_BANNER_CODE | safe }}</div>
+{% endif %}
+
+<div style="min-height:100vh;background:var(--bg-primary);padding:80px 20px 40px">
+  <!-- Header -->
+  <div style="max-width:1100px;margin:0 auto">
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:8px">
+      <a href="/app" class="btn btn-ghost btn-sm">← Back</a>
+    </div>
+    <div style="text-align:center;margin-bottom:48px">
+      <div style="font-size:56px;margin-bottom:12px">🎮</div>
+      <h1 style="font-size:40px;font-weight:800;margin-bottom:8px">CONNECTO Games</h1>
+      <p style="color:var(--text-secondary);font-size:16px">Play games, earn coins, climb the leaderboard!</p>
+      <!-- Coins display -->
+      <div id="coin-display" style="display:inline-flex;align-items:center;gap:10px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-full);padding:8px 20px;margin-top:16px">
+        <span style="font-size:20px">🪙</span>
+        <span style="font-size:18px;font-weight:700" id="coin-balance">—</span>
+        <span style="color:var(--text-muted);font-size:13px">coins</span>
+        <button id="claim-btn" class="btn btn-primary btn-sm" onclick="claimDaily()" style="margin-left:8px">🎁 Daily Claim</button>
+      </div>
+    </div>
+
+    <!-- Adsterra Banner -->
+    {% if config.ADSTERRA_BANNER_URL %}
+    <div style="text-align:center;margin-bottom:32px">
+      <a href="{{ config.ADSTERRA_BANNER_URL }}" target="_blank" rel="noopener">
+        <img src="{{ config.ADSTERRA_BANNER_URL }}" alt="Advertisement" style="max-width:728px;width:100%;border-radius:var(--radius-md)" loading="lazy"/>
+      </a>
+    </div>
+    {% endif %}
+
+    <!-- Games Grid -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:20px;margin-bottom:48px">
+      {% set game_list = [
+        ('snake','🐍','Snake','Eat and grow! Classic snake game.','1–20'),
+        ('flappy_bird','🐦','Flappy Bird','Tap to fly through pipes.','1–20'),
+        ('tictactoe','❌','Tic-Tac-Toe','Beat the computer.','5'),
+        ('memory_cards','🃏','Memory Cards','Match pairs before time runs out.','5–15'),
+        ('number_guess','🎯','Number Guess','Guess 1–100 in fewest tries.','1–10'),
+        ('word_scramble','🔤','Word Scramble','Unscramble the word fast.','3–8'),
+        ('math_quiz','🧮','Math Quiz','Speed math challenges.','2–6'),
+        ('reaction_time','⚡','Reaction Time','Click when screen changes!','1–5'),
+        ('coin_flip','🎰','Coin Flip','50/50 chance — double or nothing!','0–3'),
+        ('color_match','🎨','Color Match','Match the color name to its color.','3–7'),
+      ] %}
+      {% for gid, icon, name, desc, coins in game_list %}
+      <div class="card stagger-item" style="padding:24px;cursor:pointer;transition:all var(--transition);text-align:center" onclick="window.location.href='/games/{{gid}}'" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='var(--shadow-lg)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+        <div style="font-size:40px;margin-bottom:12px">{{icon}}</div>
+        <h3 style="font-size:17px;margin-bottom:6px">{{name}}</h3>
+        <p style="color:var(--text-muted);font-size:13px;margin-bottom:14px">{{desc}}</p>
+        <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(254,231,92,.1);border:1px solid rgba(254,231,92,.3);border-radius:var(--radius-full);padding:4px 12px;font-size:12px;font-weight:600;color:var(--accent-yellow)">
+          🪙 {{coins}} coins
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Leaderboard -->
+    <div style="max-width:600px;margin:0 auto">
+      <h2 style="font-size:24px;font-weight:700;text-align:center;margin-bottom:24px">🏆 Leaderboard</h2>
+      <div id="leaderboard" class="card" style="padding:0;overflow:hidden">
+        <div style="padding:20px;text-align:center;color:var(--text-muted)"><div class="spinner" style="margin:0 auto"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+async function loadBalance() {
+  try {
+    const res  = await fetch('/games/api/balance');
+    const data = await res.json();
+    document.getElementById('coin-balance').textContent = data.balance || 0;
+    const btn = document.getElementById('claim-btn');
+    if (!data.canClaim) {
+      const h = Math.floor(data.nextClaim/3600), m = Math.floor((data.nextClaim%3600)/60);
+      btn.textContent = `⏰ ${h}h ${m}m`;
+      btn.disabled = true;
+    }
+  } catch(e) {}
+}
+
+async function claimDaily() {
+  try {
+    const res  = await fetch('/games/api/daily-claim', { method:'POST' });
+    const data = await res.json();
+    if (data.success) {
+      toast(`🎁 Claimed ${data.coinsEarned} coins! Total: ${data.newBalance}`, 'success');
+      loadBalance();
+    } else {
+      toast(data.error, 'warning');
+    }
+  } catch(e) { toast('Login required to claim','error'); }
+}
+
+async function loadLeaderboard() {
+  const res  = await fetch('/games/api/leaderboard');
+  const data = await res.json();
+  const board= document.getElementById('leaderboard');
+  if (!data.leaderboard?.length) { board.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted)">No scores yet. Play to get on the board!</div>'; return; }
+  const medals = ['🥇','🥈','🥉'];
+  board.innerHTML = data.leaderboard.slice(0,10).map((u,i)=>`
+    <div style="display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid var(--border)">
+      <span style="font-size:20px;width:28px;text-align:center">${medals[i]||('#'+(i+1))}</span>
+      <div style="flex:1;font-weight:600">${sanitizeText(u.username||'User')}</div>
+      <div style="display:flex;align-items:center;gap:6px;font-weight:700;color:var(--accent-yellow)">🪙 ${formatCoins(u.coins)}</div>
+    </div>`).join('');
+}
+
+loadBalance();
+loadLeaderboard();
+</script>
+{% endblock %}

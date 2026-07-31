@@ -1,0 +1,3 @@
+{% set game_name='Snake' %}{% set game_icon='🐍' %}{% set game_type='canvas' %}{% set show_best=True %}{% set max_coins=20 %}{% set how_to_play='Use Arrow keys or WASD to move the snake. Eat food to grow. Avoid walls and yourself. Space to pause.' %}
+{% extends "templates/games/game_base.html" %}
+{% block game_script %}<script src="/static/js/games/snake.js"></script>{% endblock %}

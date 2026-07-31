@@ -1,0 +1,9 @@
+{% set game_name='Tic-Tac-Toe' %}{% set game_icon='❌' %}{% set game_type='custom' %}{% set max_coins=5 %}{% set how_to_play='You are X. Click a cell to place your mark. Beat the AI to earn coins!' %}
+{% extends "templates/games/game_base.html" %}
+{% block game_ui %}
+<div style="text-align:center">
+  <div id="ttt-status" style="font-size:16px;font-weight:600;margin-bottom:20px;color:var(--text-secondary)">Loading...</div>
+  <div id="ttt-grid" style="display:grid;grid-template-columns:repeat(3,100px);gap:8px;justify-content:center"></div>
+</div>
+{% endblock %}
+{% block game_script %}<script src="/static/js/games/tictactoe.js"></script>{% endblock %}

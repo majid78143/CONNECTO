@@ -1,0 +1,3 @@
+{% set game_name='Flappy Bird' %}{% set game_icon='🐦' %}{% set game_type='canvas' %}{% set show_best=True %}{% set max_coins=20 %}{% set how_to_play='Click, tap, or press Space to flap. Avoid the pipes. Score 1 point per pipe passed!' %}
+{% extends "templates/games/game_base.html" %}
+{% block game_script %}<script src="/static/js/games/flappy_bird.js"></script>{% endblock %}
