@@ -22,7 +22,8 @@ def index():
 def app_page():
     if 'user_uid' not in session:
         return redirect(url_for('auth.login'))
-    return render_template('app/main.html', server_id=None)
+    server_id = request.args.get('server', None)
+    return render_template('app/main.html', server_id=server_id)
 
 
 @main_bp.route('/app/dm/<uid>')
@@ -30,6 +31,45 @@ def dm_page(uid):
     if 'user_uid' not in session:
         return redirect(url_for('auth.login'))
     return render_template('app/main.html', dm_uid=uid, server_id=None)
+
+
+@main_bp.route('/app/explore')
+def explore():
+    if 'user_uid' not in session:
+        return redirect(url_for('auth.login'))
+    return render_template('app/explore.html')
+
+
+@main_bp.route('/api/explore/servers')
+def explore_servers():
+    if 'user_uid' not in session:
+        return jsonify({"error": "Login required"}), 401
+    db_client = get_db()
+    q        = request.args.get('q', '').strip()
+    category = request.args.get('category', 'all')
+
+    query = db_client.collection('servers').where('isPublic', '==', True)
+
+    docs = query.order_by('memberCount', direction=firestore.Query.DESCENDING).limit(48).get()
+
+    servers = []
+    for d in docs:
+        s = d.to_dict()
+        # Filter by search query
+        if q and q.lower() not in (s.get('name', '') + s.get('description', '')).lower():
+            continue
+        servers.append({
+            'serverId':    d.id,
+            'name':        s.get('name', ''),
+            'description': s.get('description', ''),
+            'iconUrl':     s.get('iconUrl', ''),
+            'bannerUrl':   s.get('bannerUrl', ''),
+            'memberCount': s.get('memberCount', 0),
+            'isVerified':  s.get('isVerified', False),
+            'category':    s.get('category', 'community'),
+        })
+
+    return jsonify({"servers": servers})
 
 
 @main_bp.route('/invite/<code>')
@@ -48,22 +88,7 @@ def invite(code):
             break
     if not server_id:
         return render_template('pages/404.html', message="Invite link invalid or expired")
-
-    server_doc = db_client.collection('servers').document(server_id).get()
-    if not server_doc.exists:
-        return render_template('pages/404.html', message="Server no longer exists")
-    server = server_doc.to_dict()
-    server['id'] = server_id
-
-    already_member = db_client.collection('servers').document(server_id) \
-        .collection('members').document(session['user_uid']).get().exists
-
-    return render_template(
-        'app/invite.html',
-        server=server,
-        invite_code=code,
-        already_member=already_member
-    )
+    return render_template('app/invite.html', server_id=server_id, code=code)
 
 
 @main_bp.route('/m/<message_id>')
@@ -76,23 +101,12 @@ def message_link(message_id):
 def settings():
     if 'user_uid' not in session:
         return redirect(url_for('auth.login'))
-    db_client = get_db()
-    user_doc = db_client.collection('users').document(session['user_uid']).get()
-    current_user = user_doc.to_dict() if user_doc.exists else {}
-    current_user['uid'] = session['user_uid']
-    return render_template('app/settings.html', current_user=current_user)
+    return render_template('app/settings.html')
 
 
 @main_bp.route('/premium')
 def premium():
-    current_user = None
-    if 'user_uid' in session:
-        db_client = get_db()
-        user_doc = db_client.collection('users').document(session['user_uid']).get()
-        if user_doc.exists:
-            current_user = user_doc.to_dict()
-            current_user['uid'] = session['user_uid']
-    return render_template('premium/index.html', current_user=current_user)
+    return render_template('premium/index.html')
 
 
 @main_bp.route('/api/search')
@@ -130,3 +144,4 @@ def search():
             })
 
     return jsonify({"results": results, "query": q})
+    
